@@ -39,9 +39,12 @@
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
 #include "stm32f1xx_hal.h"
+#include "tim.h"
 #include "gpio.h"
 
 /* USER CODE BEGIN Includes */
+
+volatile  uint8_t	   time_to_beep_u8 = 0 ;		// base on TIm3
 
 /* USER CODE END Includes */
 
@@ -93,7 +96,11 @@ int main(void)
 
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
+  MX_TIM3_Init();
   /* USER CODE BEGIN 2 */
+
+	HAL_TIM_Base_Start(&htim3);
+	HAL_TIM_Base_Start_IT(&htim3);
 
   /* USER CODE END 2 */
 
@@ -102,8 +109,12 @@ int main(void)
   while (1)
   {
 
+	if (time_to_beep_u8 == 1 )
+		{
+			time_to_beep_u8 = 0;
 	  HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
-	  HAL_Delay(50);
+	  //HAL_Delay(50);
+		}
 
   /* USER CODE END WHILE */
 
