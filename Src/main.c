@@ -110,11 +110,13 @@ int main(void)
   {
 
 	if (time_to_beep_u8 == 1 )
-		{
-			time_to_beep_u8 = 0;
-	  HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
-	  //HAL_Delay(50);
-		}
+	{
+		time_to_beep_u8 = 0;
+			//HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
+		HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
+		HAL_Delay(10);
+		HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
+	}
 
   /* USER CODE END WHILE */
 
