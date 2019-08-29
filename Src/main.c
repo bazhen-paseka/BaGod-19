@@ -40,10 +40,12 @@
 #include "main.h"
 #include "stm32f1xx_hal.h"
 #include "tim.h"
+#include "usart.h"
 #include "gpio.h"
 
 /* USER CODE BEGIN Includes */
 
+#include <string.h>
 volatile  uint8_t	   time_to_beep_u8 = 0 ;		// base on TIm3
 
 /* USER CODE END Includes */
@@ -64,6 +66,9 @@ void SystemClock_Config(void);
 /* USER CODE END PFP */
 
 /* USER CODE BEGIN 0 */
+
+	static uint32_t time_counter_u32 = 0;
+	char DataChar[100];
 
 /* USER CODE END 0 */
 
@@ -97,7 +102,56 @@ int main(void)
   /* Initialize all configured peripherals */
   MX_GPIO_Init();
   MX_TIM3_Init();
+  MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
+
+	//HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
+	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
+	HAL_Delay(1000);
+
+	sprintf(DataChar,"\r\n BaGod-17\r\nUART1 for debug started on speed 38400\r\n");
+	HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
+
+	sprintf(DataChar,"3..\r\n");
+	HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
+
+	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
+	HAL_Delay(10);
+	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
+	HAL_Delay(190);
+
+	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
+	HAL_Delay(10);
+	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
+	HAL_Delay(190);
+
+	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
+	HAL_Delay(10);
+	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
+	HAL_Delay(190);
+	HAL_Delay(1000);
+
+	sprintf(DataChar,"2..\r\n");
+	HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
+
+	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
+	HAL_Delay(10);
+	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
+	HAL_Delay(190);
+
+	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
+	HAL_Delay(10);
+	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
+	HAL_Delay(190);
+
+	HAL_Delay(1000);
+
+	sprintf(DataChar,"Start.\r\n");
+	HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
+
+	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
+	HAL_Delay(10);
+	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
 
 	HAL_TIM_Base_Start(&htim3);
 	HAL_TIM_Base_Start_IT(&htim3);
@@ -112,10 +166,37 @@ int main(void)
 	if (time_to_beep_u8 == 1 )
 	{
 		time_to_beep_u8 = 0;
-			//HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
-		HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
-		HAL_Delay(10);
-		HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
+
+		uint32_t BaGod_min = time_counter_u32 / 6;
+		uint32_t BaGod_sec = time_counter_u32 % 6;
+
+		sprintf(DataChar,"counter=%d min=%d sec= %d\r\n", (int)time_counter_u32, (int)BaGod_min, (int)BaGod_sec);
+		HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
+
+		for (uint32_t j=0; j<BaGod_min; j++)
+		{
+			sprintf(DataChar,"min= %d\r\n", (int)(j+1) );
+			HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
+
+			HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
+			HAL_Delay(100);
+			HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
+			HAL_Delay(300);
+		}
+
+
+		for (uint32_t i=0; i<BaGod_sec; i++)
+		{
+			sprintf(DataChar,"sec= %d\r\n", (int)(10*(i+1)) );
+			HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
+			HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
+			HAL_Delay(10);
+			HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
+			HAL_Delay(300);
+		}
+
+		time_counter_u32++;
+
 	}
 
   /* USER CODE END WHILE */
