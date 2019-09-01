@@ -115,38 +115,17 @@ int main(void)
 
   __HAL_RCC_GPIOB_CLK_ENABLE();
 
-  tm1637_Init(&h1_tm1637);
-  tm1637_Set_Brightness(&h1_tm1637, bright_45percent);
-  tm1637_Display_Decimal(&h1_tm1637, 1639, double_dot);
-
-
-	//HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
 	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
+	tm1637_Init(&h1_tm1637);
+	tm1637_Set_Brightness(&h1_tm1637, bright_45percent);
+	tm1637_Display_Decimal(&h1_tm1637, 8888, double_dot);
 	HAL_Delay(1000);
 
-	sprintf(DataChar,"\r\n BaGod-17\r\nUART1 for debug started on speed 38400\r\n");
+	sprintf(DataChar,"\r\n BaGod-17\r\nUART1 for debug started on speed 115200\r\n");
 	HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
 
-	sprintf(DataChar,"3..\r\n");
-	HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
-
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
-	HAL_Delay(10);
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
-	HAL_Delay(190);
-
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
-	HAL_Delay(10);
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
-	HAL_Delay(190);
-
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
-	HAL_Delay(10);
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
-	HAL_Delay(190);
-	HAL_Delay(1000);
-
-	sprintf(DataChar,"2..\r\n");
+	sprintf(DataChar,"3 ...\r\n");
+	tm1637_Display_Decimal(&h1_tm1637, 3, no_double_dot);
 	HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
 
 	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
@@ -159,9 +138,30 @@ int main(void)
 	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
 	HAL_Delay(190);
 
+	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
+	HAL_Delay(10);
+	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
+	HAL_Delay(190);
 	HAL_Delay(1000);
 
-	sprintf(DataChar,"Start.\r\n");
+	sprintf(DataChar,"2 ..\r\n");
+	tm1637_Display_Decimal(&h1_tm1637, 2, no_double_dot);
+	HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
+
+	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
+	HAL_Delay(10);
+	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
+	HAL_Delay(190);
+
+	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
+	HAL_Delay(10);
+	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
+	HAL_Delay(190);
+
+	HAL_Delay(1000);
+
+	sprintf(DataChar,"Start\r\n");
+	tm1637_Display_Decimal(&h1_tm1637, 1, no_double_dot);
 	HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
 
 	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
@@ -187,6 +187,7 @@ int main(void)
 
 		sprintf(DataChar,"counter=%d min=%d sec= %d\r\n", (int)time_counter_u32, (int)BaGod_min, (int)BaGod_sec);
 		HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
+		tm1637_Display_Decimal(&h1_tm1637, (BaGod_min*100 + BaGod_sec*10), double_dot);
 
 		for (uint32_t j=0; j<BaGod_min; j++)
 		{
@@ -199,7 +200,7 @@ int main(void)
 			HAL_Delay(300);
 		}
 
-
+		HAL_Delay(300);
 		for (uint32_t i=0; i<BaGod_sec; i++)
 		{
 			sprintf(DataChar,"sec= %d\r\n", (int)(10*(i+1)) );
@@ -211,6 +212,8 @@ int main(void)
 		}
 
 		time_counter_u32++;
+
+		if (time_counter_u32 >= 19) time_counter_u32 = 1;
 
 	}
 
