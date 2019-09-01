@@ -44,7 +44,7 @@
 #include "gpio.h"
 
 /* USER CODE BEGIN Includes */
-
+#include "tm1637_sm.h"
 #include <string.h>
 volatile  uint8_t	   time_to_beep_u8 = 0 ;		// base on TIm3
 
@@ -104,6 +104,21 @@ int main(void)
   MX_TIM3_Init();
   MX_USART1_UART_Init();
   /* USER CODE BEGIN 2 */
+
+  tm1637_struct h1_tm1637 =
+   {
+ 	 .clk_pin  = GPIO_PIN_1,
+ 	 .clk_port = GPIOB,
+ 	 .dio_pin  = GPIO_PIN_3,
+ 	 .dio_port = GPIOB
+   };
+
+  __HAL_RCC_GPIOB_CLK_ENABLE();
+
+  tm1637_Init(&h1_tm1637);
+  tm1637_Set_Brightness(&h1_tm1637, bright_45percent);
+  tm1637_Display_Decimal(&h1_tm1637, 1639, double_dot);
+
 
 	//HAL_GPIO_TogglePin(LED_RED_GPIO_Port, LED_RED_Pin);
 	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
