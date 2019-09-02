@@ -1,3 +1,6 @@
 [submodule "Drivers/tm1637_sm"]
 	path = Drivers/tm1637_sm
 	url = https://github.com/bazhen-paseka/tm1637_sm.git
+[submodule "Drivers/mp3_yx5200_sm"]
+	path = Drivers/mp3_yx5200_sm
+	url = https://github.com/bazhen-paseka/mp3_yx5200_sm.git
