@@ -51,6 +51,8 @@
 
 #define LED_RED_Pin GPIO_PIN_0
 #define LED_RED_GPIO_Port GPIOB
+#define MP3_BUSY_Pin GPIO_PIN_5
+#define MP3_BUSY_GPIO_Port GPIOB
 
 /* ########################## Assert Selection ############################## */
 /**

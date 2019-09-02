@@ -44,8 +44,11 @@
 #include "gpio.h"
 
 /* USER CODE BEGIN Includes */
-#include "tm1637_sm.h"
-#include <string.h>
+
+	#include <string.h>
+	#include "mp3_yx5200.h"
+	#include "tm1637_sm.h"
+
 volatile  uint8_t	   time_to_beep_u8 = 0 ;		// base on TIm3
 
 /* USER CODE END Includes */
@@ -69,6 +72,7 @@ void SystemClock_Config(void);
 
 	static uint32_t time_counter_u32 = 0;
 	char DataChar[100];
+	uint8_t  mp3_song_u8 = 0;
 
 /* USER CODE END 0 */
 
@@ -103,7 +107,11 @@ int main(void)
   MX_GPIO_Init();
   MX_TIM3_Init();
   MX_USART1_UART_Init();
+  MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
+
+  mp3_yx5200_init(&huart2);
+
 
   tm1637_struct h1_tm1637 =
    {
@@ -161,6 +169,7 @@ int main(void)
 	HAL_Delay(1000);
 
 	sprintf(DataChar,"Start\r\n");
+
 	tm1637_Display_Decimal(&h1_tm1637, 1, no_double_dot);
 	HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
 
@@ -170,6 +179,8 @@ int main(void)
 
 	HAL_TIM_Base_Start(&htim3);
 	HAL_TIM_Base_Start_IT(&htim3);
+
+	mp3_yx5200_play_with_index(&huart2, mp3_song_u8);
 
   /* USER CODE END 2 */
 
@@ -215,6 +226,18 @@ int main(void)
 
 		if (time_counter_u32 >= 19) time_counter_u32 = 1;
 
+		//uint32_t mp3_is_ready = mp3_yx5200_free();
+
+		mp3_yx5200_play_with_index(&huart2, mp3_song_u8);
+
+		sprintf(DataChar,"MP3_song=%d\r\n", (int)mp3_song_u8);
+		HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
+
+		mp3_song_u8++;
+		if (mp3_song_u8 >= 20)
+		{
+			mp3_song_u8 = 0;
+		}
 	}
 
   /* USER CODE END WHILE */
