@@ -72,7 +72,6 @@ void SystemClock_Config(void);
 
 	static uint32_t time_counter_u32 = 0;
 	char DataChar[100];
-	uint8_t  mp3_song_u8 = 0;
 
 /* USER CODE END 0 */
 
@@ -126,11 +125,18 @@ int main(void)
 	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
 	tm1637_Init(&h1_tm1637);
 	tm1637_Set_Brightness(&h1_tm1637, bright_45percent);
-	tm1637_Display_Decimal(&h1_tm1637, 8888, double_dot);
+	tm1637_Display_Decimal(&h1_tm1637, 1637, double_dot);
 	HAL_Delay(1000);
 
-	sprintf(DataChar,"\r\n BaGod-17\r\nUART1 for debug started on speed 115200\r\n");
+	sprintf(DataChar,"\r\nBaGod-19\r\nUART1 for debug started on speed 115200\r\n");
 	HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
+
+	for (uint8_t i= 0; i<17; i++)
+	{
+		tm1637_Display_Decimal(&h1_tm1637, i, no_double_dot);
+		mp3_yx5200_play_with_index(&huart2, i);
+	}
+
 
 	sprintf(DataChar,"3 ...\r\n");
 	tm1637_Display_Decimal(&h1_tm1637, 3, no_double_dot);
@@ -151,6 +157,9 @@ int main(void)
 	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
 	HAL_Delay(190);
 	HAL_Delay(1000);
+	//do {}		while (mp3_yx5200_free()==0);
+
+	//mp3_yx5200_play_with_index(&huart2, 0);
 
 	sprintf(DataChar,"2 ..\r\n");
 	tm1637_Display_Decimal(&h1_tm1637, 2, no_double_dot);
@@ -168,6 +177,8 @@ int main(void)
 
 	HAL_Delay(1000);
 
+	mp3_yx5200_play_with_index(&huart2, 18);
+
 	sprintf(DataChar,"Start\r\n");
 
 	tm1637_Display_Decimal(&h1_tm1637, 1, no_double_dot);
@@ -180,7 +191,9 @@ int main(void)
 	HAL_TIM_Base_Start(&htim3);
 	HAL_TIM_Base_Start_IT(&htim3);
 
-	mp3_yx5200_play_with_index(&huart2, mp3_song_u8);
+	//do {}		while (mp3_yx5200_free()==0);
+
+	//mp3_yx5200_play_with_index(&huart2, 0);
 
   /* USER CODE END 2 */
 
@@ -196,14 +209,14 @@ int main(void)
 		uint32_t BaGod_min = time_counter_u32 / 6;
 		uint32_t BaGod_sec = time_counter_u32 % 6;
 
-		sprintf(DataChar,"counter=%d min=%d sec= %d\r\n", (int)time_counter_u32, (int)BaGod_min, (int)BaGod_sec);
+		sprintf(DataChar,"counter=%d %dhv %dsec\r\n", (int)time_counter_u32, (int)BaGod_min, (int)(10*BaGod_sec));
 		HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
 		tm1637_Display_Decimal(&h1_tm1637, (BaGod_min*100 + BaGod_sec*10), double_dot);
 
 		for (uint32_t j=0; j<BaGod_min; j++)
 		{
-			sprintf(DataChar,"min= %d\r\n", (int)(j+1) );
-			HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
+			//sprintf(DataChar,"min= %d\r\n", (int)j );
+			//HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
 
 			HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
 			HAL_Delay(100);
@@ -211,11 +224,13 @@ int main(void)
 			HAL_Delay(300);
 		}
 
+		//mp3_yx5200_play_with_index(&huart2, 13 + BaGod_min);
+
 		HAL_Delay(300);
 		for (uint32_t i=0; i<BaGod_sec; i++)
 		{
-			sprintf(DataChar,"sec= %d\r\n", (int)(10*(i+1)) );
-			HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
+			//sprintf(DataChar,"sec= %d\r\n", (int)i );
+			//HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
 			HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
 			HAL_Delay(10);
 			HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
@@ -226,18 +241,10 @@ int main(void)
 
 		if (time_counter_u32 >= 19) time_counter_u32 = 1;
 
-		//uint32_t mp3_is_ready = mp3_yx5200_free();
+		mp3_yx5200_play_with_index(&huart2, 13 + BaGod_min);
+		mp3_yx5200_play_with_index(&huart2, 7 + BaGod_sec);
+		mp3_yx5200_play_with_index(&huart2, 17);
 
-		mp3_yx5200_play_with_index(&huart2, mp3_song_u8);
-
-		sprintf(DataChar,"MP3_song=%d\r\n", (int)mp3_song_u8);
-		HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
-
-		mp3_song_u8++;
-		if (mp3_song_u8 >= 20)
-		{
-			mp3_song_u8 = 0;
-		}
 	}
 
   /* USER CODE END WHILE */
