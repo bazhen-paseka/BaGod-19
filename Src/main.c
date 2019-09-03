@@ -70,7 +70,7 @@ void SystemClock_Config(void);
 
 /* USER CODE BEGIN 0 */
 
-	static uint32_t time_counter_u32 = 0;
+	static uint16_t time_counter_u16 = 0;
 	char DataChar[100];
 
 /* USER CODE END 0 */
@@ -139,7 +139,7 @@ int main(void)
 
 	HAL_Delay(2000);
 
-	for (uint8_t i= 0; i<17; i++)
+	for (uint16_t i= 0; i<17; i++)
 	{
 		tm1637_Display_Decimal(&h1_tm1637, i, no_double_dot);
 		yx5200_play_with_index(&h1_yx5200, i);
@@ -206,10 +206,10 @@ int main(void)
 	{
 		time_to_beep_u8 = 0;
 
-		uint32_t BaGod_min = time_counter_u32 / 6;
-		uint32_t BaGod_sec = time_counter_u32 % 6;
+		uint16_t BaGod_min = time_counter_u16 / 6 ;
+		uint16_t BaGod_sec = time_counter_u16 % 6 ;
 
-		sprintf(DataChar,"counter=%d %dhv %dsec\r\n", (int)time_counter_u32, (int)BaGod_min, (int)(10*BaGod_sec));
+		sprintf(DataChar,"counter=%d %dhv %dsec\r\n", (int)time_counter_u16, (int)BaGod_min, (int)(10*BaGod_sec));
 		HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
 		tm1637_Display_Decimal(&h1_tm1637, (BaGod_min*100 + BaGod_sec*10), double_dot);
 
@@ -235,9 +235,9 @@ int main(void)
 			HAL_Delay(300);
 		}
 
-		time_counter_u32++;
+		time_counter_u16++;
 
-		if (time_counter_u32 >= 19) time_counter_u32 = 1;
+		if (time_counter_u16 >= 19) time_counter_u16 = 1;
 
 		yx5200_play_with_index(&h1_yx5200, 13 + BaGod_min);
 		yx5200_play_with_index(&h1_yx5200, 7 + BaGod_sec);
