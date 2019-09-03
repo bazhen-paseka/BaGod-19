@@ -49,7 +49,7 @@
 	#include "mp3_yx5200.h"
 	#include "tm1637_sm.h"
 
-volatile  uint8_t	   time_to_beep_u8 = 0 ;		// base on TIm3
+	volatile  uint8_t	   time_to_beep_u8 = 0 ;		// base on TIm3
 
 /* USER CODE END Includes */
 
@@ -109,24 +109,30 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
-  mp3_yx5200_init(&huart2);
+	yx5200_struct h1_yx5200 =
+	{
+		.uart		= &huart2,
+		.busy_port	= GPIOB,
+		.busy_pin	= GPIO_PIN_5
+	};
 
+	tm1637_struct h1_tm1637 =
+	{
+		.clk_pin  = GPIO_PIN_1,
+		.clk_port = GPIOB,
+		.dio_pin  = GPIO_PIN_3,
+		.dio_port = GPIOB
+	};
 
-  tm1637_struct h1_tm1637 =
-   {
- 	 .clk_pin  = GPIO_PIN_1,
- 	 .clk_port = GPIOB,
- 	 .dio_pin  = GPIO_PIN_3,
- 	 .dio_port = GPIOB
-   };
+	__HAL_RCC_GPIOB_CLK_ENABLE();
 
-  __HAL_RCC_GPIOB_CLK_ENABLE();
+	mp3_yx5200_init(&h1_yx5200);
 
 	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
 	tm1637_Init(&h1_tm1637);
 	tm1637_Set_Brightness(&h1_tm1637, bright_45percent);
 	tm1637_Display_Decimal(&h1_tm1637, 1637, double_dot);
-	HAL_Delay(1000);
+	//HAL_Delay(1000);
 
 	sprintf(DataChar,"\r\nBaGod-19\r\nUART1 for debug started on speed 115200\r\n");
 	HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
@@ -136,9 +142,8 @@ int main(void)
 	for (uint8_t i= 0; i<17; i++)
 	{
 		tm1637_Display_Decimal(&h1_tm1637, i, no_double_dot);
-		mp3_yx5200_play_with_index(&huart2, i);
+		mp3_yx5200_play_with_index(&h1_yx5200, i);
 	}
-
 
 	sprintf(DataChar,"3 ...\r\n");
 	tm1637_Display_Decimal(&h1_tm1637, 3, no_double_dot);
@@ -159,9 +164,6 @@ int main(void)
 	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
 	HAL_Delay(190);
 	HAL_Delay(1000);
-	//do {}		while (mp3_yx5200_free()==0);
-
-	//mp3_yx5200_play_with_index(&huart2, 0);
 
 	sprintf(DataChar,"2 ..\r\n");
 	tm1637_Display_Decimal(&h1_tm1637, 2, no_double_dot);
@@ -179,7 +181,7 @@ int main(void)
 
 	HAL_Delay(1000);
 
-	mp3_yx5200_play_with_index(&huart2, 18);
+	mp3_yx5200_play_with_index(&h1_yx5200, 18);
 
 	sprintf(DataChar,"Start\r\n");
 
@@ -192,10 +194,6 @@ int main(void)
 
 	HAL_TIM_Base_Start(&htim3);
 	HAL_TIM_Base_Start_IT(&htim3);
-
-	//do {}		while (mp3_yx5200_free()==0);
-
-	//mp3_yx5200_play_with_index(&huart2, 0);
 
   /* USER CODE END 2 */
 
@@ -226,8 +224,6 @@ int main(void)
 			HAL_Delay(300);
 		}
 
-		//mp3_yx5200_play_with_index(&huart2, 13 + BaGod_min);
-
 		HAL_Delay(300);
 		for (uint32_t i=0; i<BaGod_sec; i++)
 		{
@@ -243,10 +239,9 @@ int main(void)
 
 		if (time_counter_u32 >= 19) time_counter_u32 = 1;
 
-		mp3_yx5200_play_with_index(&huart2, 13 + BaGod_min);
-		mp3_yx5200_play_with_index(&huart2, 7 + BaGod_sec);
-		mp3_yx5200_play_with_index(&huart2, 17);
-
+		mp3_yx5200_play_with_index(&h1_yx5200, 13 + BaGod_min);
+		mp3_yx5200_play_with_index(&h1_yx5200, 7 + BaGod_sec);
+		mp3_yx5200_play_with_index(&h1_yx5200, 17);
 	}
 
   /* USER CODE END WHILE */
