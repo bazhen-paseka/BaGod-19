@@ -46,7 +46,7 @@
 /* USER CODE BEGIN Includes */
 
 	#include <string.h>
-	#include "mp3_yx5200.h"
+	#include "yx5200_sm.h"
 	#include "tm1637_sm.h"
 
 	volatile  uint8_t	   time_to_beep_u8 = 0 ;		// base on TIm3
@@ -126,7 +126,7 @@ int main(void)
 
 	__HAL_RCC_GPIOB_CLK_ENABLE();
 
-	mp3_yx5200_init(&h1_yx5200);
+	yx5200_init(&h1_yx5200);
 
 	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
 	tm1637_Init(&h1_tm1637);
@@ -134,7 +134,7 @@ int main(void)
 	tm1637_Display_Decimal(&h1_tm1637, 1637, double_dot);
 	//HAL_Delay(1000);
 
-	sprintf(DataChar,"\r\nBaGod-19\r\nUART1 for debug started on speed 115200\r\n");
+	sprintf(DataChar,"\r\nBaGod-19 v1.0.0\r\nUART1 for debug started on speed 115200\r\n");
 	HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
 
 	HAL_Delay(2000);
@@ -142,7 +142,7 @@ int main(void)
 	for (uint8_t i= 0; i<17; i++)
 	{
 		tm1637_Display_Decimal(&h1_tm1637, i, no_double_dot);
-		mp3_yx5200_play_with_index(&h1_yx5200, i);
+		yx5200_play_with_index(&h1_yx5200, i);
 	}
 
 	sprintf(DataChar,"3 ...\r\n");
@@ -181,7 +181,7 @@ int main(void)
 
 	HAL_Delay(1000);
 
-	mp3_yx5200_play_with_index(&h1_yx5200, 18);
+	yx5200_play_with_index(&h1_yx5200, 18);
 
 	sprintf(DataChar,"Start\r\n");
 
@@ -239,9 +239,9 @@ int main(void)
 
 		if (time_counter_u32 >= 19) time_counter_u32 = 1;
 
-		mp3_yx5200_play_with_index(&h1_yx5200, 13 + BaGod_min);
-		mp3_yx5200_play_with_index(&h1_yx5200, 7 + BaGod_sec);
-		mp3_yx5200_play_with_index(&h1_yx5200, 17);
+		yx5200_play_with_index(&h1_yx5200, 13 + BaGod_min);
+		yx5200_play_with_index(&h1_yx5200, 7 + BaGod_sec);
+		yx5200_play_with_index(&h1_yx5200, 17);
 	}
 
   /* USER CODE END WHILE */
