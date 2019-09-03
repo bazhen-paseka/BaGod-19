@@ -131,6 +131,8 @@ int main(void)
 	sprintf(DataChar,"\r\nBaGod-19\r\nUART1 for debug started on speed 115200\r\n");
 	HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
 
+	HAL_Delay(2000);
+
 	for (uint8_t i= 0; i<17; i++)
 	{
 		tm1637_Display_Decimal(&h1_tm1637, i, no_double_dot);
