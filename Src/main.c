@@ -134,7 +134,7 @@ int main(void)
 	tm1637_Display_Decimal(&h1_tm1637, 1637, double_dot);
 	//HAL_Delay(1000);
 
-	sprintf(DataChar,"\r\nBaGod-19 v1.0.0\r\nUART1 for debug started on speed 115200\r\n");
+	sprintf(DataChar,"\r\nBaGod-19 v1.2.0\r\nUART1 for debug started on speed 115200\r\n");
 	HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
 
 	HAL_Delay(2000);
