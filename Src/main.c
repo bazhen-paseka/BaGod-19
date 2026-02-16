@@ -25,12 +25,12 @@
 /* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-	#include <string.h>
+	#include "string.h"
+	#include "stdio.h"
+	#include "local_config.h"
 	#include "yx5200_sm.h"
 	#include "tm1637_sm.h"
-	#include "stdio.h"
-
-	volatile  uint8_t	   time_to_beep_u8 = 0 ;		// base on TIm3
+	#include "debug_gx.h"
 
 /* USER CODE END Includes */
 
@@ -53,6 +53,8 @@
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 
+	volatile  uint8_t	   time_to_beep_u8 = 0 ;		// base on TIm3
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
@@ -66,7 +68,7 @@ void SystemClock_Config(void);
 /* USER CODE BEGIN 0 */
 
 	static uint16_t time_counter_u16 = 0;
-	char DataChar[100];
+	//char DataChar[100];
 
 /* USER CODE END 0 */
 
@@ -104,15 +106,22 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
-	yx5200_struct h1_yx5200 =
-	{
+	DWT_Delay_Init();
+	//PC13_HotFix();
+	DebugSoftVersion(SOFT_VERSION);
+	DBG1("\t BaGod-19 & stm32F103\r\n");
+	DBG1("\t   board: JM-Electron\r\n ");
+	DBG2("\t debugTx: PA9, UART1, 62500\r\n");
+	DBG3("\t USART1->BRR: %lx\r\n", USART1->BRR);
+	DBG2("\t     LED: PA1 (need Push Pull) \r\n");
+
+	yx5200_struct h1_yx5200 = {
 		.uart		= &huart2,
 		.busy_port	= GPIOB,
 		.busy_pin	= GPIO_PIN_5
 	};
 
-	tm1637_struct h1_tm1637 =
-	{
+	tm1637_struct h1_tm1637 = {
 		.clk_pin  = GPIO_PIN_12,
 		.clk_port = GPIOB,
 		.dio_pin  = GPIO_PIN_13,
@@ -123,69 +132,36 @@ int main(void)
 
 	yx5200_init(&h1_yx5200);
 
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
+	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, SET);
 	tm1637_Init(&h1_tm1637);
 	tm1637_Set_Brightness(&h1_tm1637, bright_45percent);
 	tm1637_Display_Decimal(&h1_tm1637, 1637, double_dot);
-	//HAL_Delay(1000);
-
-	sprintf(DataChar,"\r\n\tBaGod-19 v1.3.1 16.02.2026\r\n\tUART1 for debug started on speed 62500\r\n");
-	HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
-
 	HAL_Delay(2000);
 
-	for (uint16_t i= 0; i<17; i++)
-	{
+	for (uint16_t i= 0; i<17; i++) {
 		tm1637_Display_Decimal(&h1_tm1637, i, no_double_dot);
 		yx5200_play_with_index(&h1_yx5200, i);
 	}
 
-	sprintf(DataChar,"3 ...\r\n");
+	DBG1("3 ...\r\n");
 	tm1637_Display_Decimal(&h1_tm1637, 3, no_double_dot);
-	HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
-
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
-	HAL_Delay(10);
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
-	HAL_Delay(190);
-
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
-	HAL_Delay(10);
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
-	HAL_Delay(190);
-
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
-	HAL_Delay(10);
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
-	HAL_Delay(190);
+	HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
 	HAL_Delay(1000);
 
-	sprintf(DataChar,"2 ..\r\n");
+	DBG1("2 ..\r\n");
 	tm1637_Display_Decimal(&h1_tm1637, 2, no_double_dot);
-	HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
-
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
-	HAL_Delay(10);
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
-	HAL_Delay(190);
-
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
-	HAL_Delay(10);
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
-	HAL_Delay(190);
-
+	HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
 	HAL_Delay(1000);
 
 	yx5200_play_with_index(&h1_yx5200, 18);
 
-	sprintf(DataChar,"Start\r\n");
+	DBG1("Start\r\n");
 
 	tm1637_Display_Decimal(&h1_tm1637, 1, no_double_dot);
-	HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
 
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
+	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, RESET);
 	HAL_Delay(10);
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
+	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, SET);
 
 	HAL_TIM_Base_Start(&htim3);
 	HAL_TIM_Base_Start_IT(&htim3);
@@ -194,39 +170,29 @@ int main(void)
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-
-	if (time_to_beep_u8 == 1 )
-	{
+  while (1) {
+	if (time_to_beep_u8 == 1 ) {
 		time_to_beep_u8 = 0;
-
 		uint16_t BaGod_min = time_counter_u16 / 6 ;
 		uint16_t BaGod_sec = time_counter_u16 % 6 ;
 
-		sprintf(DataChar,"counter=%d %dhv %dsec\r\n", (int)time_counter_u16, (int)BaGod_min, (int)(10*BaGod_sec));
-		HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
+		DBG1("counter=%d %dhv %dsec\r\n", (int)time_counter_u16, (int)BaGod_min, (int)(10*BaGod_sec));
 		tm1637_Display_Decimal(&h1_tm1637, (BaGod_min*100 + BaGod_sec*10), double_dot);
 
-		for (uint32_t j=0; j<BaGod_min; j++)
-		{
-			//sprintf(DataChar,"min= %d\r\n", (int)j );
-			//HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
-
-			HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
+		for (uint32_t j=0; j<BaGod_min; j++) {
+			DBG1("min= %d\r\n", (int)j );
+			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, RESET);
 			HAL_Delay(100);
-			HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
+			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, SET);
 			HAL_Delay(300);
 		}
 
 		HAL_Delay(300);
-		for (uint32_t i=0; i<BaGod_sec; i++)
-		{
-			//sprintf(DataChar,"sec= %d\r\n", (int)i );
-			//HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
-			HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
+		for (uint32_t i=0; i<BaGod_sec; i++) {
+			DBG1("sec= %d\r\n", (int)i );
+			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, RESET);
 			HAL_Delay(10);
-			HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
+			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, SET);
 			HAL_Delay(300);
 		}
 

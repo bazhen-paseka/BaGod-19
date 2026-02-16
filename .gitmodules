@@ -4,3 +4,6 @@
 [submodule "Drivers/yx5200_sm"]
 	path = Drivers/yx5200_sm
 	url = https://github.com/bazhen-paseka/yx5200_sm.git
+[submodule "Drivers/debug_gh"]
+	path = Drivers/debug_gh
+	url = git@gitlab.com:DriversSM/debug_gh.git
