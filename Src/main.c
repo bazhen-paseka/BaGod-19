@@ -113,9 +113,9 @@ int main(void)
 
 	tm1637_struct h1_tm1637 =
 	{
-		.clk_pin  = GPIO_PIN_1,
+		.clk_pin  = GPIO_PIN_12,
 		.clk_port = GPIOB,
-		.dio_pin  = GPIO_PIN_3,
+		.dio_pin  = GPIO_PIN_13,
 		.dio_port = GPIOB
 	};
 
