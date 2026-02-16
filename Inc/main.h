@@ -57,8 +57,14 @@ void Error_Handler(void);
 /* USER CODE END EFP */
 
 /* Private defines -----------------------------------------------------------*/
+#define MP3_uart_Tx_Pin GPIO_PIN_2
+#define MP3_uart_Tx_GPIO_Port GPIOA
+#define MP3_uart_Rx_Pin GPIO_PIN_3
+#define MP3_uart_Rx_GPIO_Port GPIOA
 #define LED_RED_Pin GPIO_PIN_0
 #define LED_RED_GPIO_Port GPIOB
+#define debug_Tx_Pin GPIO_PIN_9
+#define debug_Tx_GPIO_Port GPIOA
 
 /* USER CODE BEGIN Private defines */
 
