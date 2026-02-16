@@ -54,6 +54,8 @@
 /* Private variables ---------------------------------------------------------*/
 
 	volatile  uint8_t	   time_to_beep_u8 = 0 ;		// base on TIm3
+	static uint16_t time_counter_u16 = 0;
+	tm1637_struct 	h1_tm1637;
 
 /* USER CODE END PV */
 
@@ -66,9 +68,6 @@ void SystemClock_Config(void);
 
 /* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
-	static uint16_t time_counter_u16 = 0;
-	//char DataChar[100];
 
 /* USER CODE END 0 */
 
@@ -121,35 +120,45 @@ int main(void)
 		.busy_pin	= GPIO_PIN_5
 	};
 
-	tm1637_struct h1_tm1637 = {
-		.clk_pin  = GPIO_PIN_12,
-		.clk_port = GPIOB,
-		.dio_pin  = GPIO_PIN_13,
-		.dio_port = GPIOB
-	};
+//	tm1637_struct h1_tm1637 = {
+//		.clk_pin  = GPIO_PIN_12,
+//		.clk_port = GPIOB,
+//		.dio_pin  = GPIO_PIN_13,
+//		.dio_port = GPIOB
+//	};
+
+	h1_tm1637.clk_pin  = TM1637_CLK_Pin;
+	h1_tm1637.clk_port = TM1637_CLK_GPIO_Port;
+	h1_tm1637.dio_pin  = TM1637_DIO_Pin;
+	h1_tm1637.dio_port = TM1637_DIO_GPIO_Port;
+	h1_tm1637.digit_qnt= 4;	// or 4 for 4 digits
+	TM1637_Init(&h1_tm1637);
+	TM1637_Set_Brightness(&h1_tm1637, bright_15percent);
+	TM1637_Display_Decimal(&h1_tm1637, 1234, double_dot, symbol_dec);
 
 	__HAL_RCC_GPIOB_CLK_ENABLE();
 
 	yx5200_init(&h1_yx5200);
 
 	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, SET);
-	tm1637_Init(&h1_tm1637);
-	tm1637_Set_Brightness(&h1_tm1637, bright_45percent);
-	tm1637_Display_Decimal(&h1_tm1637, 1637, double_dot);
+	//tm1637_Init(&h1_tm1637);
+	//tm1637_Set_Brightness(&h1_tm1637, bright_45percent);
+	//TM1637_Display_Decimal(&h1_tm1637, 1637, double_dot);
 	HAL_Delay(2000);
 
-	for (uint16_t i= 0; i<17; i++) {
-		tm1637_Display_Decimal(&h1_tm1637, i, no_double_dot);
+	for (int i= 0; i<17; i++) {
+		DBG1("%d ", 16-i );  fflush(stdout);
+		TM1637_Display_Decimal(&h1_tm1637, 16-i, no_double_dot, symbol_dec);
 		yx5200_play_with_index(&h1_yx5200, i);
 	}
 
-	DBG1("3 ...\r\n");
-	tm1637_Display_Decimal(&h1_tm1637, 3, no_double_dot);
+	DBG1("\r\n3 ...\r\n");
+	TM1637_Display_Decimal(&h1_tm1637, 3, no_double_dot, symbol_dec);
 	HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
 	HAL_Delay(1000);
 
 	DBG1("2 ..\r\n");
-	tm1637_Display_Decimal(&h1_tm1637, 2, no_double_dot);
+	TM1637_Display_Decimal(&h1_tm1637, 2, no_double_dot, symbol_dec);
 	HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
 	HAL_Delay(1000);
 
@@ -157,7 +166,7 @@ int main(void)
 
 	DBG1("Start\r\n");
 
-	tm1637_Display_Decimal(&h1_tm1637, 1, no_double_dot);
+	TM1637_Display_Decimal(&h1_tm1637, 1, no_double_dot, symbol_dec);
 
 	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, RESET);
 	HAL_Delay(10);
@@ -177,7 +186,7 @@ int main(void)
 		uint16_t BaGod_sec = time_counter_u16 % 6 ;
 
 		DBG1("counter=%d %dhv %dsec\r\n", (int)time_counter_u16, (int)BaGod_min, (int)(10*BaGod_sec));
-		tm1637_Display_Decimal(&h1_tm1637, (BaGod_min*100 + BaGod_sec*10), double_dot);
+		TM1637_Display_Decimal(&h1_tm1637, (BaGod_min*100 + BaGod_sec*10), double_dot, symbol_dec);
 
 		for (uint32_t j=0; j<BaGod_min; j++) {
 			DBG1("min= %d\r\n", (int)j );
