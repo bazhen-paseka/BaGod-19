@@ -69,6 +69,9 @@ void Error_Handler(void);
 #define TM1637_DIO_GPIO_Port GPIOB
 #define debug_Tx_Pin GPIO_PIN_9
 #define debug_Tx_GPIO_Port GPIOA
+#define MP3_BUSY_Pin GPIO_PIN_5
+#define MP3_BUSY_GPIO_Port GPIOB
+#define MP3_BUSY_EXTI_IRQn EXTI9_5_IRQn
 
 /* USER CODE BEGIN Private defines */
 

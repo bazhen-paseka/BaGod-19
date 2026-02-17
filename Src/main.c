@@ -56,6 +56,7 @@
 	volatile  uint8_t	   time_to_beep_u8 = 0 ;		// base on TIm3
 	static uint16_t time_counter_u16 = 0;
 	tm1637_struct 	h1_tm1637;
+	yx5200_struct 	h1_yx5200;
 
 /* USER CODE END PV */
 
@@ -114,18 +115,9 @@ int main(void)
 	DBG3("\t USART1->BRR: %lx\r\n", USART1->BRR);
 	DBG2("\t     LED: PA1 (need Push Pull) \r\n");
 
-	yx5200_struct h1_yx5200 = {
-		.uart		= &huart2,
-		.busy_port	= GPIOB,
-		.busy_pin	= GPIO_PIN_5
-	};
-
-//	tm1637_struct h1_tm1637 = {
-//		.clk_pin  = GPIO_PIN_12,
-//		.clk_port = GPIOB,
-//		.dio_pin  = GPIO_PIN_13,
-//		.dio_port = GPIOB
-//	};
+	h1_yx5200.uart		= &MP3_UART;
+	h1_yx5200.busy_pin	= MP3_BUSY_Pin;
+	h1_yx5200.busy_port	= MP3_BUSY_GPIO_Port;
 
 	h1_tm1637.clk_pin  = TM1637_CLK_Pin;
 	h1_tm1637.clk_port = TM1637_CLK_GPIO_Port;
@@ -136,20 +128,16 @@ int main(void)
 	TM1637_Set_Brightness(&h1_tm1637, bright_15percent);
 	TM1637_Display_Decimal(&h1_tm1637, 1234, double_dot, symbol_dec);
 
-	__HAL_RCC_GPIOB_CLK_ENABLE();
-
-	yx5200_init(&h1_yx5200);
+	//__HAL_RCC_GPIOB_CLK_ENABLE();
+	MP3_YX5200_Init(&h1_yx5200);
 
 	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, SET);
-	//tm1637_Init(&h1_tm1637);
-	//tm1637_Set_Brightness(&h1_tm1637, bright_45percent);
-	//TM1637_Display_Decimal(&h1_tm1637, 1637, double_dot);
 	HAL_Delay(2000);
 
 	for (int i= 0; i<17; i++) {
 		DBG1("%d ", 16-i );  fflush(stdout);
 		TM1637_Display_Decimal(&h1_tm1637, 16-i, no_double_dot, symbol_dec);
-		yx5200_play_with_index(&h1_yx5200, i);
+		MP3_YX5200_Play_with_index(&h1_yx5200, i);
 	}
 
 	DBG1("\r\n3 ...\r\n");
@@ -162,7 +150,7 @@ int main(void)
 	HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
 	HAL_Delay(1000);
 
-	yx5200_play_with_index(&h1_yx5200, 18);
+	MP3_YX5200_Play_with_index(&h1_yx5200, 18);
 
 	DBG1("Start\r\n");
 
@@ -209,9 +197,9 @@ int main(void)
 
 		if (time_counter_u16 >= 19) time_counter_u16 = 1;
 
-		yx5200_play_with_index(&h1_yx5200, 13 + BaGod_min);
-		yx5200_play_with_index(&h1_yx5200, 7 + BaGod_sec);
-		yx5200_play_with_index(&h1_yx5200, 17);
+		MP3_YX5200_Play_with_index(&h1_yx5200, 13 + BaGod_min);
+		MP3_YX5200_Play_with_index(&h1_yx5200, 7 + BaGod_sec);
+		MP3_YX5200_Play_with_index(&h1_yx5200, 17);
 	}
 
     /* USER CODE END WHILE */
