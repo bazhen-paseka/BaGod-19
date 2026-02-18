@@ -54,7 +54,7 @@
 /* Private variables ---------------------------------------------------------*/
 
 	volatile  uint8_t	   time_to_beep_u8 = 0 ;		// base on TIm3
-	static uint16_t time_counter_u16 = 0;
+
 	tm1637_struct 	h1_tm1637;
 	yx5200_struct 	h1_yx5200;
 
@@ -128,40 +128,25 @@ int main(void)
 	TM1637_Set_Brightness(&h1_tm1637, bright_15percent);
 	TM1637_Display_Decimal(&h1_tm1637, 1234, double_dot, symbol_dec);
 
-	//__HAL_RCC_GPIOB_CLK_ENABLE();
 	MP3_YX5200_Init(&h1_yx5200);
 
 	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, SET);
-	HAL_Delay(2000);
-
-	for (int i= 0; i<17; i++) {
-		DBG1("%d ", 16-i );  fflush(stdout);
-		TM1637_Display_Decimal(&h1_tm1637, 16-i, no_double_dot, symbol_dec);
-		MP3_YX5200_Play_with_index(&h1_yx5200, i);
-	}
-
-	DBG1("\r\n3 ...\r\n");
-	TM1637_Display_Decimal(&h1_tm1637, 3, no_double_dot, symbol_dec);
-	HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-	HAL_Delay(1000);
-
-	DBG1("2 ..\r\n");
-	TM1637_Display_Decimal(&h1_tm1637, 2, no_double_dot, symbol_dec);
-	HAL_GPIO_TogglePin(LED_GPIO_Port, LED_Pin);
-	HAL_Delay(1000);
-
-	MP3_YX5200_Play_with_index(&h1_yx5200, 18);
-
 	DBG1("Start\r\n");
 
-	TM1637_Display_Decimal(&h1_tm1637, 1, no_double_dot, symbol_dec);
+	MP3_YX5200_Play_with_index(&h1_yx5200, 1001);
+	MP3_YX5200_Play_with_index(&h1_yx5200, 1103);
+	MP3_YX5200_Play_with_index(&h1_yx5200, 1218);
+	MP3_YX5200_Play_with_index(&h1_yx5200, 1302);
+	MP3_YX5200_Play_with_index(&h1_yx5200, 1426);
+	MP3_YX5200_Play_with_index(&h1_yx5200, 1512);
+	MP3_YX5200_Play_with_index(&h1_yx5200, 1618);
+	MP3_YX5200_Play_with_index(&h1_yx5200, 1736);
+	MP3_YX5200_Play_with_index(&h1_yx5200, 2175);
+	MP3_YX5200_Play_with_index(&h1_yx5200, 2220);
+	MP3_YX5200_Play_with_index(&h1_yx5200, 2477);
 
-	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, RESET);
-	HAL_Delay(10);
-	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, SET);
-
-	HAL_TIM_Base_Start(&htim3);
 	HAL_TIM_Base_Start_IT(&htim3);
+	time_to_beep_u8 = 0;
 
   /* USER CODE END 2 */
 
@@ -170,36 +155,12 @@ int main(void)
   while (1) {
 	if (time_to_beep_u8 == 1 ) {
 		time_to_beep_u8 = 0;
-		uint16_t BaGod_min = time_counter_u16 / 6 ;
-		uint16_t BaGod_sec = time_counter_u16 % 6 ;
-
-		DBG1("counter=%d %dhv %dsec\r\n", (int)time_counter_u16, (int)BaGod_min, (int)(10*BaGod_sec));
-		TM1637_Display_Decimal(&h1_tm1637, (BaGod_min*100 + BaGod_sec*10), double_dot, symbol_dec);
-
-		for (uint32_t j=0; j<BaGod_min; j++) {
-			DBG1("min= %d\r\n", (int)j );
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, RESET);
-			HAL_Delay(100);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, SET);
-			HAL_Delay(300);
-		}
-
-		HAL_Delay(300);
-		for (uint32_t i=0; i<BaGod_sec; i++) {
-			DBG1("sec= %d\r\n", (int)i );
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, RESET);
-			HAL_Delay(10);
-			HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, SET);
-			HAL_Delay(300);
-		}
-
-		time_counter_u16++;
-
-		if (time_counter_u16 >= 19) time_counter_u16 = 1;
-
-		MP3_YX5200_Play_with_index(&h1_yx5200, 13 + BaGod_min);
-		MP3_YX5200_Play_with_index(&h1_yx5200, 7 + BaGod_sec);
-		MP3_YX5200_Play_with_index(&h1_yx5200, 17);
+		DBG1("\r\nRTC-IRQ\r\n");
+		MP3_YX5200_Play_with_index(&h1_yx5200, 1000);
+		MP3_YX5200_Play_with_index(&h1_yx5200, 1000);
+		MP3_YX5200_Play_with_index(&h1_yx5200, 1512);
+		MP3_YX5200_Play_with_index(&h1_yx5200, 1618);
+		MP3_YX5200_Play_with_index(&h1_yx5200, 1736);
 	}
 
     /* USER CODE END WHILE */
