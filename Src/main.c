@@ -1,92 +1,89 @@
-
+/* USER CODE BEGIN Header */
 /**
   ******************************************************************************
   * @file           : main.c
   * @brief          : Main program body
   ******************************************************************************
-  ** This notice applies to any and all portions of this file
-  * that are not between comment pairs USER CODE BEGIN and
-  * USER CODE END. Other portions of this file, whether 
-  * inserted by the user or by software development tools
-  * are owned by their respective copyright owners.
+  * @attention
   *
-  * COPYRIGHT(c) 2019 STMicroelectronics
+  * Copyright (c) 2026 STMicroelectronics.
+  * All rights reserved.
   *
-  * Redistribution and use in source and binary forms, with or without modification,
-  * are permitted provided that the following conditions are met:
-  *   1. Redistributions of source code must retain the above copyright notice,
-  *      this list of conditions and the following disclaimer.
-  *   2. Redistributions in binary form must reproduce the above copyright notice,
-  *      this list of conditions and the following disclaimer in the documentation
-  *      and/or other materials provided with the distribution.
-  *   3. Neither the name of STMicroelectronics nor the names of its contributors
-  *      may be used to endorse or promote products derived from this software
-  *      without specific prior written permission.
-  *
-  * THIS SOFTWARE IS PROVIDED BY THE COPYRIGHT HOLDERS AND CONTRIBUTORS "AS IS"
-  * AND ANY EXPRESS OR IMPLIED WARRANTIES, INCLUDING, BUT NOT LIMITED TO, THE
-  * IMPLIED WARRANTIES OF MERCHANTABILITY AND FITNESS FOR A PARTICULAR PURPOSE ARE
-  * DISCLAIMED. IN NO EVENT SHALL THE COPYRIGHT HOLDER OR CONTRIBUTORS BE LIABLE
-  * FOR ANY DIRECT, INDIRECT, INCIDENTAL, SPECIAL, EXEMPLARY, OR CONSEQUENTIAL
-  * DAMAGES (INCLUDING, BUT NOT LIMITED TO, PROCUREMENT OF SUBSTITUTE GOODS OR
-  * SERVICES; LOSS OF USE, DATA, OR PROFITS; OR BUSINESS INTERRUPTION) HOWEVER
-  * CAUSED AND ON ANY THEORY OF LIABILITY, WHETHER IN CONTRACT, STRICT LIABILITY,
-  * OR TORT (INCLUDING NEGLIGENCE OR OTHERWISE) ARISING IN ANY WAY OUT OF THE USE
-  * OF THIS SOFTWARE, EVEN IF ADVISED OF THE POSSIBILITY OF SUCH DAMAGE.
+  * This software is licensed under terms that can be found in the LICENSE file
+  * in the root directory of this software component.
+  * If no LICENSE file comes with this software, it is provided AS-IS.
   *
   ******************************************************************************
   */
+/* USER CODE END Header */
 /* Includes ------------------------------------------------------------------*/
 #include "main.h"
-#include "stm32f1xx_hal.h"
 #include "tim.h"
 #include "usart.h"
 #include "gpio.h"
 
+/* Private includes ----------------------------------------------------------*/
 /* USER CODE BEGIN Includes */
 
-	#include <string.h>
+	#include "string.h"
+	#include "stdio.h"
+	#include "local_config.h"
 	#include "yx5200_sm.h"
 	#include "tm1637_sm.h"
-
-	volatile  uint8_t	   time_to_beep_u8 = 0 ;		// base on TIm3
+	#include "debug_gx.h"
 
 /* USER CODE END Includes */
+
+/* Private typedef -----------------------------------------------------------*/
+/* USER CODE BEGIN PTD */
+
+/* USER CODE END PTD */
+
+/* Private define ------------------------------------------------------------*/
+/* USER CODE BEGIN PD */
+/* USER CODE END PD */
+
+/* Private macro -------------------------------------------------------------*/
+/* USER CODE BEGIN PM */
+
+/* USER CODE END PM */
 
 /* Private variables ---------------------------------------------------------*/
 
 /* USER CODE BEGIN PV */
 /* Private variables ---------------------------------------------------------*/
 
+	volatile  uint8_t	   time_to_beep_u8 = 0 ;		// base on TIm3
+
+	tm1637_struct 	h1_tm1637;
+	yx5200_struct 	h1_yx5200;
+
 /* USER CODE END PV */
 
 /* Private function prototypes -----------------------------------------------*/
 void SystemClock_Config(void);
-
 /* USER CODE BEGIN PFP */
 /* Private function prototypes -----------------------------------------------*/
 
 /* USER CODE END PFP */
 
+/* Private user code ---------------------------------------------------------*/
 /* USER CODE BEGIN 0 */
-
-	static uint16_t time_counter_u16 = 0;
-	char DataChar[100];
 
 /* USER CODE END 0 */
 
 /**
   * @brief  The application entry point.
-  *
-  * @retval None
+  * @retval int
   */
 int main(void)
 {
+
   /* USER CODE BEGIN 1 */
 
   /* USER CODE END 1 */
 
-  /* MCU Configuration----------------------------------------------------------*/
+  /* MCU Configuration--------------------------------------------------------*/
 
   /* Reset of all peripherals, Initializes the Flash interface and the Systick. */
   HAL_Init();
@@ -109,148 +106,69 @@ int main(void)
   MX_USART2_UART_Init();
   /* USER CODE BEGIN 2 */
 
-	yx5200_struct h1_yx5200 =
-	{
-		.uart		= &huart2,
-		.busy_port	= GPIOB,
-		.busy_pin	= GPIO_PIN_5
-	};
+	DWT_Delay_Init();
+	//PC13_HotFix();
+	DebugSoftVersion(SOFT_VERSION);
+	DBG1("\t BaGod-19 & stm32F103\r\n");
+	DBG1("\t   board: JM-Electron\r\n ");
+	DBG2("\t debugTx: PA9, UART1, 62500\r\n");
+	DBG3("\t USART1->BRR: %lx\r\n", USART1->BRR);
+	DBG2("\t     LED: PA1 (need Push Pull) \r\n");
 
-	tm1637_struct h1_tm1637 =
-	{
-		.clk_pin  = GPIO_PIN_1,
-		.clk_port = GPIOB,
-		.dio_pin  = GPIO_PIN_3,
-		.dio_port = GPIOB
-	};
+	h1_yx5200.uart		= &MP3_UART;
+	h1_yx5200.busy_pin	= MP3_BUSY_Pin;
+	h1_yx5200.busy_port	= MP3_BUSY_GPIO_Port;
 
-	__HAL_RCC_GPIOB_CLK_ENABLE();
+	h1_tm1637.clk_pin  = TM1637_CLK_Pin;
+	h1_tm1637.clk_port = TM1637_CLK_GPIO_Port;
+	h1_tm1637.dio_pin  = TM1637_DIO_Pin;
+	h1_tm1637.dio_port = TM1637_DIO_GPIO_Port;
+	h1_tm1637.digit_qnt= 4;	// or 4 for 4 digits
+	TM1637_Init(&h1_tm1637);
+	TM1637_Set_Brightness(&h1_tm1637, bright_15percent);
+	TM1637_Display_Decimal(&h1_tm1637, 1234, double_dot, symbol_dec);
 
-	yx5200_init(&h1_yx5200);
+	MP3_YX5200_Init(&h1_yx5200);
 
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
-	tm1637_Init(&h1_tm1637);
-	tm1637_Set_Brightness(&h1_tm1637, bright_45percent);
-	tm1637_Display_Decimal(&h1_tm1637, 1637, double_dot);
-	//HAL_Delay(1000);
+	HAL_GPIO_WritePin(LED_GPIO_Port, LED_Pin, SET);
+	DBG1("Start\r\n");
 
-	sprintf(DataChar,"\r\nBaGod-19 v1.2.0\r\nUART1 for debug started on speed 115200\r\n");
-	HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
+	MP3_YX5200_Play_with_index(&h1_yx5200, 1001);
+	MP3_YX5200_Play_with_index(&h1_yx5200, 1103);
+	MP3_YX5200_Play_with_index(&h1_yx5200, 1218);
+	MP3_YX5200_Play_with_index(&h1_yx5200, 1302);
+	MP3_YX5200_Play_with_index(&h1_yx5200, 1426);
+	MP3_YX5200_Play_with_index(&h1_yx5200, 1512);
+	MP3_YX5200_Play_with_index(&h1_yx5200, 1618);
+	MP3_YX5200_Play_with_index(&h1_yx5200, 1736);
+	MP3_YX5200_Play_with_index(&h1_yx5200, 2175);
+	MP3_YX5200_Play_with_index(&h1_yx5200, 2220);
+	MP3_YX5200_Play_with_index(&h1_yx5200, 2477);
 
-	HAL_Delay(2000);
-
-	for (uint16_t i= 0; i<17; i++)
-	{
-		tm1637_Display_Decimal(&h1_tm1637, i, no_double_dot);
-		yx5200_play_with_index(&h1_yx5200, i);
-	}
-
-	sprintf(DataChar,"3 ...\r\n");
-	tm1637_Display_Decimal(&h1_tm1637, 3, no_double_dot);
-	HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
-
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
-	HAL_Delay(10);
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
-	HAL_Delay(190);
-
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
-	HAL_Delay(10);
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
-	HAL_Delay(190);
-
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
-	HAL_Delay(10);
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
-	HAL_Delay(190);
-	HAL_Delay(1000);
-
-	sprintf(DataChar,"2 ..\r\n");
-	tm1637_Display_Decimal(&h1_tm1637, 2, no_double_dot);
-	HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
-
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
-	HAL_Delay(10);
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
-	HAL_Delay(190);
-
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
-	HAL_Delay(10);
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
-	HAL_Delay(190);
-
-	HAL_Delay(1000);
-
-	yx5200_play_with_index(&h1_yx5200, 18);
-
-	sprintf(DataChar,"Start\r\n");
-
-	tm1637_Display_Decimal(&h1_tm1637, 1, no_double_dot);
-	HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
-
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
-	HAL_Delay(10);
-	HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
-
-	HAL_TIM_Base_Start(&htim3);
 	HAL_TIM_Base_Start_IT(&htim3);
+	time_to_beep_u8 = 0;
 
   /* USER CODE END 2 */
 
   /* Infinite loop */
   /* USER CODE BEGIN WHILE */
-  while (1)
-  {
-
-	if (time_to_beep_u8 == 1 )
-	{
+  while (1) {
+	if (time_to_beep_u8 == 1 ) {
 		time_to_beep_u8 = 0;
-
-		uint16_t BaGod_min = time_counter_u16 / 6 ;
-		uint16_t BaGod_sec = time_counter_u16 % 6 ;
-
-		sprintf(DataChar,"counter=%d %dhv %dsec\r\n", (int)time_counter_u16, (int)BaGod_min, (int)(10*BaGod_sec));
-		HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
-		tm1637_Display_Decimal(&h1_tm1637, (BaGod_min*100 + BaGod_sec*10), double_dot);
-
-		for (uint32_t j=0; j<BaGod_min; j++)
-		{
-			//sprintf(DataChar,"min= %d\r\n", (int)j );
-			//HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
-
-			HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
-			HAL_Delay(100);
-			HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
-			HAL_Delay(300);
-		}
-
-		HAL_Delay(300);
-		for (uint32_t i=0; i<BaGod_sec; i++)
-		{
-			//sprintf(DataChar,"sec= %d\r\n", (int)i );
-			//HAL_UART_Transmit(&huart1, (uint8_t *)DataChar, strlen(DataChar), 100);
-			HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, RESET);
-			HAL_Delay(10);
-			HAL_GPIO_WritePin(LED_RED_GPIO_Port, LED_RED_Pin, SET);
-			HAL_Delay(300);
-		}
-
-		time_counter_u16++;
-
-		if (time_counter_u16 >= 19) time_counter_u16 = 1;
-
-		yx5200_play_with_index(&h1_yx5200, 13 + BaGod_min);
-		yx5200_play_with_index(&h1_yx5200, 7 + BaGod_sec);
-		yx5200_play_with_index(&h1_yx5200, 17);
+		DBG1("\r\nRTC-IRQ\r\n");
+		MP3_YX5200_Play_with_index(&h1_yx5200, 1000);
+		MP3_YX5200_Play_with_index(&h1_yx5200, 1000);
+		MP3_YX5200_Play_with_index(&h1_yx5200, 1512);
+		MP3_YX5200_Play_with_index(&h1_yx5200, 1618);
+		MP3_YX5200_Play_with_index(&h1_yx5200, 1736);
 	}
 
-  /* USER CODE END WHILE */
+    /* USER CODE END WHILE */
 
-  /* USER CODE BEGIN 3 */
+    /* USER CODE BEGIN 3 */
 
   }
   /* USER CODE END 3 */
-
 }
 
 /**
@@ -259,12 +177,12 @@ int main(void)
   */
 void SystemClock_Config(void)
 {
+  RCC_OscInitTypeDef RCC_OscInitStruct = {0};
+  RCC_ClkInitTypeDef RCC_ClkInitStruct = {0};
 
-  RCC_OscInitTypeDef RCC_OscInitStruct;
-  RCC_ClkInitTypeDef RCC_ClkInitStruct;
-
-    /**Initializes the CPU, AHB and APB busses clocks 
-    */
+  /** Initializes the RCC Oscillators according to the specified parameters
+  * in the RCC_OscInitTypeDef structure.
+  */
   RCC_OscInitStruct.OscillatorType = RCC_OSCILLATORTYPE_HSE;
   RCC_OscInitStruct.HSEState = RCC_HSE_ON;
   RCC_OscInitStruct.HSEPredivValue = RCC_HSE_PREDIV_DIV1;
@@ -274,11 +192,11 @@ void SystemClock_Config(void)
   RCC_OscInitStruct.PLL.PLLMUL = RCC_PLL_MUL9;
   if (HAL_RCC_OscConfig(&RCC_OscInitStruct) != HAL_OK)
   {
-    _Error_Handler(__FILE__, __LINE__);
+    Error_Handler();
   }
 
-    /**Initializes the CPU, AHB and APB busses clocks 
-    */
+  /** Initializes the CPU, AHB and APB buses clocks
+  */
   RCC_ClkInitStruct.ClockType = RCC_CLOCKTYPE_HCLK|RCC_CLOCKTYPE_SYSCLK
                               |RCC_CLOCKTYPE_PCLK1|RCC_CLOCKTYPE_PCLK2;
   RCC_ClkInitStruct.SYSCLKSource = RCC_SYSCLKSOURCE_PLLCLK;
@@ -288,19 +206,8 @@ void SystemClock_Config(void)
 
   if (HAL_RCC_ClockConfig(&RCC_ClkInitStruct, FLASH_LATENCY_2) != HAL_OK)
   {
-    _Error_Handler(__FILE__, __LINE__);
+    Error_Handler();
   }
-
-    /**Configure the Systick interrupt time 
-    */
-  HAL_SYSTICK_Config(HAL_RCC_GetHCLKFreq()/1000);
-
-    /**Configure the Systick 
-    */
-  HAL_SYSTICK_CLKSourceConfig(SYSTICK_CLKSOURCE_HCLK);
-
-  /* SysTick_IRQn interrupt configuration */
-  HAL_NVIC_SetPriority(SysTick_IRQn, 0, 0);
 }
 
 /* USER CODE BEGIN 4 */
@@ -309,11 +216,9 @@ void SystemClock_Config(void)
 
 /**
   * @brief  This function is executed in case of error occurrence.
-  * @param  file: The file name as string.
-  * @param  line: The line in file as a number.
   * @retval None
   */
-void _Error_Handler(char *file, int line)
+void Error_Handler(void)
 {
   /* USER CODE BEGIN Error_Handler_Debug */
   /* User can add his own implementation to report the HAL error return state */
@@ -322,8 +227,7 @@ void _Error_Handler(char *file, int line)
   }
   /* USER CODE END Error_Handler_Debug */
 }
-
-#ifdef  USE_FULL_ASSERT
+#ifdef USE_FULL_ASSERT
 /**
   * @brief  Reports the name of the source file and the source line number
   *         where the assert_param error has occurred.
@@ -331,21 +235,11 @@ void _Error_Handler(char *file, int line)
   * @param  line: assert_param error line source number
   * @retval None
   */
-void assert_failed(uint8_t* file, uint32_t line)
-{ 
+void assert_failed(uint8_t *file, uint32_t line)
+{
   /* USER CODE BEGIN 6 */
   /* User can add his own implementation to report the file name and line number,
      tex: printf("Wrong parameters value: file %s on line %d\r\n", file, line) */
   /* USER CODE END 6 */
 }
 #endif /* USE_FULL_ASSERT */
-
-/**
-  * @}
-  */
-
-/**
-  * @}
-  */
-
-/************************ (C) COPYRIGHT STMicroelectronics *****END OF FILE****/
